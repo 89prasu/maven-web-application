@@ -9,7 +9,7 @@ echo "Jenkins Home url is: $JENKINS_HOME"
 properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')), [$class: 'JobLocalConfiguration', changeReasonComment: ''], pipelineTriggers([pollSCM('* * * * *')])])
 
 stage('CheckOutCode'){
-git branch: 'development', credentialsId: '7234a3b2-097a-4e4b-a14d-a9e98131fa2b', url: 'https://github.com/MithunTechnologiesDevOps/maven-web-application.git'
+git branch: 'development', credentialsId: '1134fdb0-12bd-4d9c-a166-88f486daff6f', url: 'https://github.com/89prasu/maven-web-application.git'
 }
 
 stage('Build'){
@@ -31,6 +31,12 @@ sshagent(['2d6c465d-3f2c-4356-83b4-6c4928ec54c6']) {
 }
 }
 */
-
-
+stage('push to ECR){
+withEnv (["AWS_ACCESS_KEY_ID=${env.AWS_ACCESS_KEY_ID}", "AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY}", "AWS_DEFAULT_REGION=${env.AWS_DEFAULT_REGION}"]) {
+sh 'docker login -u AWS -p $(aws ecr get-login-password --region ap-south-1) 549572817696.dkr.ecr.ap-south-1.amazonaws.com'
+sh 'docker build -t maven-web-appp .'
+sh 'docker tag maven-web-appp:latest 549572817696.dkr.ecr.ap-south-1.amazonaws.com/maven-web-appp:""$BUILD_ID""'
+sh 'docker push 549572817696.dkr.ecr.ap-south-1.amazonaws.com/maven-web-appp:""$BUILD_ID""'
+}
+}
 }
